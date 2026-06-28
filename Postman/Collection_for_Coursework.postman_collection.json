@@ -1,0 +1,3076 @@
+{
+  "info": {
+    "_postman_id": "d7583bb7-2be2-4522-b9b9-a0a8ab45d026",
+    "name": "Collection for Coursework",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55147410",
+    "_collection_link": "https://go.postman.co/collection/55147410-d7583bb7-2be2-4522-b9b9-a0a8ab45d026?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Space",
+      "item": [
+        {
+          "name": "Negative tests - Create",
+          "item": [
+            {
+              "name": "Create a Space with non-unique name",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "pm.collectionVariables.unset(\"space_name_non_uniq\");\r",
+                      "\r",
+                      "// Generate a random number for space name\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "    pm.collectionVariables.set(\"space_name_non_uniq\", body.name);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Space Creation with non-unique name\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Creation with non-unique name is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the error message of the response body for non-unique space name\r",
+                      "\r",
+                      "var body1 = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space name is not unique\", function () {\r",
+                      "    pm.expect(body1.err).to.eql(\"Space with this name already exists\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space\r",
+                      "\r",
+                      "var env = pm.environment.get(\"app_url\");\r",
+                      "var spaceId = pm.collectionVariables.get(\"space_id\");\r",
+                      "var token_auth = pm.environment.get(\"token\");\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: env + \"/space/\" + spaceId,\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": token_auth\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code of Space Delete is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{space_name_non_uniq}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{app_url}}/team/{{team_id}}/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "{{team_id}}",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create a Space without a name",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Space Creation without a name\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Creation is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check if the response body contains the correct error message for an empty space name\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space name is empty\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Space name invalid\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{app_url}}/team/{{team_id}}/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "{{team_id}}",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create a Space with an invalid token",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Space Creation with an invalid token\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Creation with an invalid token is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the error message when the token is invalid\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Authorization token is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Token invalid\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "pk_402569192_H8G5ELRN8N4VV08M4RN6DPKG52H52YHF",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"test\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{app_url}}/team/{{team_id}}/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "{{team_id}}",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Create a Space with a random name",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up previous variables if they exist\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"space_id\");\r",
+                  "\r",
+                  "// Generate a random number and set it as a collection variable\r",
+                  "\r",
+                  "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "pm.collectionVariables.set(\"rndNum\", rndNum);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code for Space creation\r",
+                  "\r",
+                  "pm.test(\"Status code for Space creation is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Check the created space has the correct name\r",
+                  "\r",
+                  "var body = pm.response.json();\r",
+                  "pm.collectionVariables.set(\"space_id\", body.id);\r",
+                  "\r",
+                  "\r",
+                  "pm.test(\"Space has the correct name\", function () {\r",
+                  "    pm.expect(body.name).to.eql(\"space_\" + pm.collectionVariables.get(\"rndNum\"));\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Check a schema for Space Creating\r",
+                  "\r",
+                  "const Ajv = require('ajv');\r",
+                  "const ajv = new Ajv();\r",
+                  "\r",
+                  "var schema = {\r",
+                  "    \"type\": \"object\",\r",
+                  "    \"required\": [\"id\", \"name\", \"color\", \"private\", \"avatar\", \"admin_can_manage\", \"statuses\", \"multiple_assignees\", \"features\", \"archived\"],\r",
+                  "    \"properties\": {\r",
+                  "        \"id\": { \"type\": \"string\" },\r",
+                  "        \"name\": { \"type\": \"string\" },\r",
+                  "        \"color\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"private\": { \"type\": \"boolean\" },\r",
+                  "        \"avatar\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"admin_can_manage\": { \"type\": [\"boolean\", \"null\"] },\r",
+                  "        \"multiple_assignees\": { \"type\": \"boolean\" },\r",
+                  "        \"archived\": { \"type\": \"boolean\" },\r",
+                  "        \"statuses\": {\r",
+                  "            \"type\": \"array\",\r",
+                  "            \"items\": {\r",
+                  "                \"type\": \"object\",\r",
+                  "                \"required\": [\"id\", \"status\", \"type\", \"orderindex\", \"color\"],\r",
+                  "                \"properties\": {\r",
+                  "                    \"id\": { \"type\": \"string\" },\r",
+                  "                    \"status\": { \"type\": \"string\" },\r",
+                  "                    \"type\": { \"type\": \"string\" },\r",
+                  "                    \"orderindex\": { \"type\": \"number\" },\r",
+                  "                    \"color\": { \"type\": \"string\" }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        },\r",
+                  "        \"features\": {\r",
+                  "            \"type\": \"object\",\r",
+                  "            \"properties\": {\r",
+                  "                \"due_dates\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"start_date\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_due_dates\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_closed_due_date\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"sprints\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"points\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"custom_items\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"checklists\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"milestones\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"dependency_warning\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"status_pies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"emails\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"time_tracking\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"default_to_billable\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"scheduler_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_type_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_enforcement\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependency_settings\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" },\r",
+                  "                        \"reschedule_closed_dependencies\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"reschedule_closed_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const validate = ajv.compile(schema);\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test('Schema for Space Creation is valid', function () {\r",
+                  "    const valid = validate(response);\r",
+                  "    pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "// Delete the created space\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\")\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.test(\"Status code for Space Delete is 200\", function () {\r",
+                  "        pm.expect(response).to.have.status(200);\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"space_{{rndNum}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{app_url}}/team/{{team_id}}/space",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "team",
+                "{{team_id}}",
+                "space"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Delete Space",
+      "item": [
+        {
+          "name": "Negative tests - Delete",
+          "item": [
+            {
+              "name": "Delete the created Space with an invalid token",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "// Generate a random number and store it in a collection variable\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space and store its ID in a collection variable\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    \r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code of Space Delete with an invalid token\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Delete with an invalid token is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the correct error message when the token is invalid\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Authorization token is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Token invalid\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code for Space Delete with the correct token is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "pk_402569192_H8G5ELRN8N4VV08M4RN6DPKG52H52YHF",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/{{space_id}}",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "{{space_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete the created Space with an invalid Space ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "// Generate a random number and store it in a collection variable\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space and store its ID in a collection variable\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    \r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code of Space Delete with an invalid Space ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Delete with an invalid Space ID is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the correct error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space ID is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Space ID invalid\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space with the correct Space ID\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code for Space Delete with the correct Space ID is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/a",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "a"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete the created Space with an empty Space ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "pm.collectionVariables.set(\"space_id\", \"\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code of Space Delete with an empty Space ID \r",
+                      "\r",
+                      "pm.test(\"Status code for Space Delete with an empty Space ID is 404\", function () {\r",
+                      "    pm.response.to.have.status(404);\r",
+                      "});\r",
+                      "\r",
+                      "// Check if the response body contains the expected message\r",
+                      "\r",
+                      "pm.test(\"404 - the page is not found\", function () {\r",
+                      "    pm.expect(pm.response.text()).to.include(\"404 page not found\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/{{space_id}}",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "{{space_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Delete the created Space",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up previous variables if they exist\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"space_id\");\r",
+                  "\r",
+                  "// Create a random number and store it in a collection variable\r",
+                  "\r",
+                  "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "\r",
+                  "// Create a new space and store its ID in a collection variable\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                  "    method: \"POST\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                  "        \"Content-Type\": \"application/json\",\r",
+                  "        \"accept\": \"application/json\"\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: \"raw\",\r",
+                  "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    console.log(\"Status code of Space creation is \", response.code);\r",
+                  "    \r",
+                  "    var body = response.json();\r",
+                  "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code for Space Delete\r",
+                  "\r",
+                  "pm.test(\"Status code for Space Delete is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{app_url}}/space/{{space_id}}",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "space",
+                "{{space_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Get Spaces",
+      "item": [
+        {
+          "name": "Negative tests - Get Spaces",
+          "item": [
+            {
+              "name": "Get Spaces when Team ID is empty",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"team_id_tst\");\r",
+                      "pm.collectionVariables.set(\"team_id_tst\", \"\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Spaces when an empty Team ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Spaces when an empty Team ID is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the correct error message when Team ID is empty\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Team ID is empty\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Invalid workspace id: space\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/team/{{team_id_tst}}/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "{{team_id_tst}}",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Spaces with an invalid token",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "// Generate a random number and store it in the collection variable\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space and store its ID in the collection variable\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    \r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Spaces with an invalid token\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Spaces with an invalid token is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Authorization token is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Token invalid\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code for Space Delete with the correct token is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "pk_402569192_H8G5ELRN8N4VV08M4RN6DPKG52H52YHF",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/team/{{team_id}}/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "{{team_id}}",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Spaces with an invalid Team ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "// Generate a random number and store it in a collection variable\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space using the generated random number for the name\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    \r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Spaces with an invalid Team ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Spaces with an invalid Team ID is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the correct error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Team ID is incorrect\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Workspace not authorized\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code for Space Delete with the correct token is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/team/1/space",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "team",
+                    "1",
+                    "space"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get Spaces of a team",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code for Get Spaces\r",
+                  "\r",
+                  "pm.test(\"Status code of Get Spaces is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Check ID of the last space in the response body matches ID of the last created space\r",
+                  "\r",
+                  "let body = pm.response.json();\r",
+                  "let length = body.spaces.length;\r",
+                  "\r",
+                  "pm.test(\"Space has the correct ID\", function () {\r",
+                  "    pm.expect(body.spaces[length - 2].id).to.eql(pm.collectionVariables.get(\"space_id1\"));\r",
+                  "});\r",
+                  "\r",
+                  "// Check schema for Get Spaces\r",
+                  "\r",
+                  "const Ajv = require('ajv');\r",
+                  "const ajv = new Ajv();\r",
+                  "\r",
+                  "var schema = {\r",
+                  "    \"type\": \"object\",\r",
+                  "    \"required\": [\"spaces\"],\r",
+                  "    \"properties\": {\r",
+                  "        \"spaces\": {\r",
+                  "            \"type\": \"array\",\r",
+                  "            \"items\": {\r",
+                  "                \"type\": \"object\",\r",
+                  "                \"required\": [\"id\", \"name\", \"private\", \"statuses\", \"multiple_assignees\", \"features\", \"archived\"],\r",
+                  "                \"properties\": {\r",
+                  "                    \"id\": { \"type\": \"string\" },\r",
+                  "                    \"name\": { \"type\": \"string\" },\r",
+                  "                    \"color\": { \"oneOf\": [{ \"type\": \"string\" }, { \"type\": \"null\" }] },\r",
+                  "                    \"private\": { \"type\": \"boolean\" },\r",
+                  "                    \"avatar\": { \"oneOf\": [{ \"type\": \"string\" }, { \"type\": \"null\" }] },\r",
+                  "                    \"admin_can_manage\": { \"oneOf\": [{ \"type\": \"boolean\" }, { \"type\": \"null\" }] },\r",
+                  "                    \"statuses\": {\r",
+                  "                        \"type\": \"array\",\r",
+                  "                        \"items\": {\r",
+                  "                            \"type\": \"object\",\r",
+                  "                            \"required\": [\"id\", \"status\", \"type\", \"orderindex\", \"color\"],\r",
+                  "                            \"properties\": {\r",
+                  "                                \"id\": { \"type\": \"string\" },\r",
+                  "                                \"status\": { \"type\": \"string\" },\r",
+                  "                                \"type\": { \"type\": \"string\" },\r",
+                  "                                \"orderindex\": { \"type\": \"number\" },\r",
+                  "                                \"color\": { \"type\": \"string\" }\r",
+                  "                            }\r",
+                  "                        }\r",
+                  "                    },\r",
+                  "                    \"multiple_assignees\": { \"type\": \"boolean\" },\r",
+                  "                    \"features\": {\r",
+                  "                        \"type\": \"object\",\r",
+                  "                        \"required\": [\"due_dates\", \"sprints\", \"points\", \"custom_items\", \"milestones\", \"dependency_warning\", \"emails\", \"scheduler_enabled\", \"dependency_type_enabled\", \"dependency_enforcement\", \"remap_dependency_settings\", \"reschedule_closed_dependencies\"],\r",
+                  "                        \"properties\": {\r",
+                  "                            \"due_dates\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\", \"start_date\", \"remap_due_dates\", \"remap_closed_due_date\"],\r",
+                  "                                \"properties\": {\r",
+                  "                                    \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                                    \"start_date\": { \"type\": \"boolean\" },\r",
+                  "                                    \"remap_due_dates\": { \"type\": \"boolean\" },\r",
+                  "                                    \"remap_closed_due_date\": { \"type\": \"boolean\" }\r",
+                  "                                }\r",
+                  "                            },\r",
+                  "                            \"sprints\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"time_tracking\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": {\r",
+                  "                                    \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                                    \"harvest\": { \"type\": \"boolean\" },\r",
+                  "                                    \"rollup\": { \"type\": \"boolean\" },\r",
+                  "                                    \"default_to_billable\": { \"type\": \"number\" }\r",
+                  "                                }\r",
+                  "                            },\r",
+                  "                            \"points\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"custom_items\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"priorities\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": {\r",
+                  "                                    \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                                    \"priorities\": { \"type\": \"array\" }\r",
+                  "                                }\r",
+                  "                            },\r",
+                  "                            \"tags\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"check_unresolved\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"milestones\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"custom_fields\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"dependency_warning\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"status_pies\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"multiple_assignees\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"emails\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            },\r",
+                  "                            \"scheduler_enabled\": { \"type\": \"boolean\" },\r",
+                  "                            \"dependency_type_enabled\": { \"type\": \"boolean\" },\r",
+                  "                            \"dependency_enforcement\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enforcement_mode\"],\r",
+                  "                                \"properties\": { \"enforcement_mode\": { \"type\": \"number\" } }\r",
+                  "                            },\r",
+                  "                            \"remap_dependency_settings\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\", \"enforcement_mode\", \"reschedule_closed_dependencies\"],\r",
+                  "                                \"properties\": {\r",
+                  "                                    \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                                    \"enforcement_mode\": { \"type\": \"number\" },\r",
+                  "                                    \"reschedule_closed_dependencies\": { \"type\": \"boolean\" }\r",
+                  "                                }\r",
+                  "                            },\r",
+                  "                            \"reschedule_closed_dependencies\": {\r",
+                  "                                \"type\": \"object\",\r",
+                  "                                \"required\": [\"enabled\"],\r",
+                  "                                \"properties\": { \"enabled\": { \"type\": \"boolean\" } }\r",
+                  "                            }\r",
+                  "                        }\r",
+                  "                    },\r",
+                  "                    \"archived\": { \"type\": \"boolean\" }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const validate = ajv.compile(schema);\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test('Schema for Get Spaces of Team is valid', function () {\r",
+                  "    const valid = validate(response);\r",
+                  "    pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Delete all created spaces\r",
+                  "\r",
+                  "for (let i = 1, j = 2; i <= j; i++) {\r",
+                  "    let p = \"space_id\"+i;\r",
+                  "    console.log(\"space_id\" + i);\r",
+                  "    pm.sendRequest({\r",
+                  "        url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(p),\r",
+                  "        method: \"DELETE\",\r",
+                  "        header: {\r",
+                  "            \"Authorization\": pm.environment.get(\"token\")\r",
+                  "        }\r",
+                  "    }, function (err, response) {\r",
+                  "        if (err) {\r",
+                  "            console.error(err);\r",
+                  "            return;\r",
+                  "        }\r",
+                  "        pm.test(\"Status code for Space\" + i + \" Delete is 200\", function () {\r",
+                  "            pm.expect(response).to.have.status(200);\r",
+                  "        });\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up previous variables if they exist\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"space_id1\");\r",
+                  "pm.collectionVariables.unset(\"space_id2\");\r",
+                  "\r",
+                  "// Function for sending a request to create a space and saving the ID in a collection variable\r",
+                  "\r",
+                  "function sendSpaceRequest(k) {\r",
+                  "    return new Promise((resolve, reject) => {\r",
+                  "        let rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "        let p = \"space_id\" + k;\r",
+                  "\r",
+                  "        pm.sendRequest({\r",
+                  "            url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                  "            method: \"POST\",\r",
+                  "            header: {\r",
+                  "                \"Authorization\": pm.environment.get(\"token\"),\r",
+                  "                \"Content-Type\": \"application/json\",\r",
+                  "                \"accept\": \"application/json\"\r",
+                  "            },\r",
+                  "            body: {\r",
+                  "                mode: \"raw\",\r",
+                  "                raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                  "            }\r",
+                  "        }, function (err, response) {\r",
+                  "            if (err) {\r",
+                  "                console.error(err);\r",
+                  "                return reject(err);\r",
+                  "            }\r",
+                  "            \r",
+                  "            let body = response.json();\r",
+                  "\r",
+                  "            // Display in console for debugging purposes\r",
+                  "            console.log(\"Saving into \" + p + \": \" + body.id);\r",
+                  "            \r",
+                  "            // Save id into collectionVariable with dynamic name \r",
+                  "            pm.collectionVariables.set(p, body.id);\r",
+                  "            \r",
+                  "            resolve();\r",
+                  "        });\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "// Function for running tasks sequentially\r",
+                  "\r",
+                  "async function runTasks() {\r",
+                  "    for (let k = 1; k <= 2; k++) {\r",
+                  "        await sendSpaceRequest(k); \r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "// Create 2 random spaces and save their ids into collection variables.\r",
+                  "runTasks();"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{app_url}}/team/{{team_id}}/space",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "team",
+                "{{team_id}}",
+                "space"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Get Space Info",
+      "item": [
+        {
+          "name": "Negative tests - Get Space Info",
+          "item": [
+            {
+              "name": "Get Space Info with an empty Space ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "pm.collectionVariables.set(\"space_id\", \"\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Space Info with an empty Space ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Space Info with an empty Space ID is 404\", function () {\r",
+                      "    pm.response.to.have.status(404);\r",
+                      "});\r",
+                      "\r",
+                      "// Check if the response body contains the expected error message\r",
+                      "\r",
+                      "pm.test(\"404 - the page is not found\", function () {\r",
+                      "    pm.expect(pm.response.text()).to.include(\"404 page not found\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/{{space_id}}",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "{{space_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Space Info with an invalid Space ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Space Info with an invalid Space ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Space Info with an invalid Space ID is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space ID is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Space ID invalid\");\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/a",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "a"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Space Info with an invalid token",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "// Generate a random number and store it in the collection variable rndNum\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a new space with a random name and store the space id in the collection variable\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "    \r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Get Space Info with an invalid token\r",
+                      "\r",
+                      "pm.test(\"Status code for Get Space Info with an invalid token is 401\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Authorization token is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Token invalid\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the space with the correct token\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code for Space Delete with the correct token is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "pk_402569192_H8G5ELRN8N4VV08M4RN6DPKG52H52YHF",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{app_url}}/space/{{space_id}}",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "{{space_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get Space Info",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up previous variables if they exist\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"space_id\");\r",
+                  "pm.collectionVariables.unset(\"space_name\");\r",
+                  "\r",
+                  "// Generate a random number for the space name and set it in the collection variable rndNum\r",
+                  "\r",
+                  "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "\r",
+                  "// Create a new space with a random name and set the space id and space name in the collection variables\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                  "    method: \"POST\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                  "        \"Content-Type\": \"application/json\",\r",
+                  "        \"accept\": \"application/json\"\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: \"raw\",\r",
+                  "        raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    console.log(\"Status code of Space creation is \", response.code);\r",
+                  "    \r",
+                  "    var body = response.json();\r",
+                  "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                  "    pm.collectionVariables.set(\"space_name\", \"space_\" + rndNum);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code of Get Space Info\r",
+                  "\r",
+                  "pm.test(\"Status code of Get Space Info is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Check if the response body contains the correct Space ID and Space Name\r",
+                  "\r",
+                  "var body = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Space contains the correct ID\", function () {\r",
+                  "    pm.expect(body.id).to.eql(pm.collectionVariables.get(\"space_id\"));\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Space contains the correct Name\", function () {\r",
+                  "    pm.expect(body.name).to.eql(pm.collectionVariables.get(\"space_name\"));\r",
+                  "});\r",
+                  "\r",
+                  "// Check a schema for Get Space Info\r",
+                  "\r",
+                  "const Ajv = require('ajv');\r",
+                  "const ajv = new Ajv();\r",
+                  "\r",
+                  "var schema = {\r",
+                  "    \"type\": \"object\",\r",
+                  "    \"required\": [\"id\", \"name\", \"color\", \"private\", \"avatar\", \"admin_can_manage\", \"statuses\", \"multiple_assignees\", \"features\", \"archived\"],\r",
+                  "    \"properties\": {\r",
+                  "        \"id\": { \"type\": \"string\" },\r",
+                  "        \"name\": { \"type\": \"string\" },\r",
+                  "        \"color\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"private\": { \"type\": \"boolean\" },\r",
+                  "        \"avatar\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"admin_can_manage\": { \"type\": [\"boolean\", \"null\"] },\r",
+                  "        \"multiple_assignees\": { \"type\": \"boolean\" },\r",
+                  "        \"archived\": { \"type\": \"boolean\" },\r",
+                  "        \"statuses\": {\r",
+                  "            \"type\": \"array\",\r",
+                  "            \"items\": {\r",
+                  "                \"type\": \"object\",\r",
+                  "                \"required\": [\"id\", \"status\", \"type\", \"orderindex\", \"color\"],\r",
+                  "                \"properties\": {\r",
+                  "                    \"id\": { \"type\": \"string\" },\r",
+                  "                    \"status\": { \"type\": \"string\" },\r",
+                  "                    \"type\": { \"type\": \"string\" },\r",
+                  "                    \"orderindex\": { \"type\": \"number\" },\r",
+                  "                    \"color\": { \"type\": \"string\" }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        },\r",
+                  "        \"features\": {\r",
+                  "            \"type\": \"object\",\r",
+                  "            \"properties\": {\r",
+                  "                \"due_dates\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"start_date\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_due_dates\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_closed_due_date\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"sprints\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"points\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"custom_items\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"checklists\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"milestones\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"dependency_warning\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"status_pies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"emails\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"time_tracking\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"default_to_billable\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"scheduler_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_type_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_enforcement\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependency_settings\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" },\r",
+                  "                        \"reschedule_closed_dependencies\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"reschedule_closed_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const validate = ajv.compile(schema);\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test('Schema for Get Space Info is valid', function () {\r",
+                  "    const valid = validate(response);\r",
+                  "    pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Delete the created space\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\")\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.test(\"Status code for Space Delete is 200\", function () {\r",
+                  "        pm.expect(response).to.have.status(200);\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{app_url}}/space/{{space_id}}",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "space",
+                "{{space_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Update Space",
+      "item": [
+        {
+          "name": "Negative tests - Update",
+          "item": [
+            {
+              "name": "Update a Space Name by non-unique value",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up previous variables if they exist\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"space_id1\");\r",
+                      "pm.collectionVariables.unset(\"space_id2\");\r",
+                      "pm.collectionVariables.unset(\"space_name1\");\r",
+                      "pm.collectionVariables.unset(\"space_name2\");\r",
+                      "\r",
+                      "// Create 2 random spaces and save their ids into collection variables.\r",
+                      "\r",
+                      "for (let k = 1, j = 2; k <= j; k++) {\r",
+                      "    let rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "    let p_id = \"space_id\" + k;\r",
+                      "    let p_name = \"space_name\" + k;\r",
+                      "\r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "        method: \"POST\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "            \"Content-Type\": \"application/json\",\r",
+                      "            \"accept\": \"application/json\"\r",
+                      "        },\r",
+                      "        body: {\r",
+                      "            mode: \"raw\",\r",
+                      "            raw: JSON.stringify({ name: \"space_\" + rndNum })\r",
+                      "        }\r",
+                      "    }, function (err, response) {\r",
+                      "        if (err) {\r",
+                      "            console.error(err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        let body = response.json();\r",
+                      "        \r",
+                      "        // Save id into collectionVariable with dynamic name (space_id1, space_id2)\r",
+                      "        pm.collectionVariables.set(p_id, body.id);\r",
+                      "        \r",
+                      "        // Display in console for debugging purposes\r",
+                      "        console.log(\"Saving into \" + p_id + \": \" + body.id);\r",
+                      "\r",
+                      "        // Save name into collectionVariable with dynamic name (space_name1, space_name2)\r",
+                      "        pm.collectionVariables.set(p_name, body.name);\r",
+                      "\r",
+                      "        // Display in console for debugging purposes\r",
+                      "        console.log(\"Saving into \" + p_name + \": \" + body.name);\r",
+                      "\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code for Update Space with non-unique one\r",
+                      "\r",
+                      "pm.test(\"Status code of Update Space Name with non-unique one is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the error message of the response body for non-unique space name\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space name is not unique\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Name already in use\");\r",
+                      "});\r",
+                      "\r",
+                      "\r",
+                      "// Delete all created spaces\r",
+                      "\r",
+                      "for (let i = 1, j = 2; i <= j; i++) {\r",
+                      "    let p = \"space_id\"+i;\r",
+                      "    \r",
+                      "    pm.sendRequest({\r",
+                      "        url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(p),\r",
+                      "        method: \"DELETE\",\r",
+                      "        header: {\r",
+                      "            \"Authorization\": pm.environment.get(\"token\")\r",
+                      "        }\r",
+                      "    }, function (err, response) {\r",
+                      "        if (err) {\r",
+                      "            console.error(err);\r",
+                      "            return;\r",
+                      "        }\r",
+                      "        pm.test(\"Status code for Space\" + i + \" Delete is 200\", function () {\r",
+                      "            pm.expect(response).to.have.status(200);\r",
+                      "        });\r",
+                      "    });\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{space_name2}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{app_url}}/space/{{space_id1}}",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "{{space_id1}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update a Space Name with an invalid Space ID",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Clean up old variables and set new ones\r",
+                      "\r",
+                      "pm.collectionVariables.unset(\"rndNum\");\r",
+                      "pm.collectionVariables.unset(\"rndNum_upd\");\r",
+                      "pm.collectionVariables.unset(\"space_id\");\r",
+                      "\r",
+                      "\r",
+                      "// Create Space Name with Random Number for updating\r",
+                      "\r",
+                      "var rndNum_upd = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "pm.collectionVariables.set(\"space_name_upd\", \"space_\" + rndNum_upd);\r",
+                      "\r",
+                      "// Generate a random number for rndmNum variable\r",
+                      "\r",
+                      "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                      "\r",
+                      "// Create a Space for updating\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                      "    method: \"POST\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                      "        \"Content-Type\": \"application/json\",\r",
+                      "        \"accept\": \"application/json\"\r",
+                      "    },\r",
+                      "    body: {\r",
+                      "        mode: \"raw\",\r",
+                      "        raw: JSON.stringify({\r",
+                      "            name: \"space_\" + rndNum\r",
+                      "        })\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "\r",
+                      "    console.log(\"Status code of Space creation is \", response.code);\r",
+                      "\r",
+                      "    var body = response.json();\r",
+                      "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Check the status code of Space Update with an invalid Space ID\r",
+                      "\r",
+                      "pm.test(\"Status code for Space Update with an invalid Space ID is 400\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Check the response body for the correct error message\r",
+                      "\r",
+                      "var body = pm.response.json();\r",
+                      "\r",
+                      "pm.test(\"Space ID is invalid\", function () {\r",
+                      "    pm.expect(body.err).to.eql(\"Space ID invalid\");\r",
+                      "});\r",
+                      "\r",
+                      "// Delete the created space\r",
+                      "\r",
+                      "pm.sendRequest({\r",
+                      "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                      "    method: \"DELETE\",\r",
+                      "    header: {\r",
+                      "        \"Authorization\": pm.environment.get(\"token\")\r",
+                      "    }\r",
+                      "}, function (err, response) {\r",
+                      "    if (err) {\r",
+                      "        console.error(err);\r",
+                      "        return;\r",
+                      "    }\r",
+                      "    pm.test(\"Status code of Space Delete is 200\", function () {\r",
+                      "        pm.expect(response).to.have.status(200);\r",
+                      "    });\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "apikey",
+                  "apikey": [
+                    {
+                      "key": "value",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "content-type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{space_name_upd}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{app_url}}/space/a",
+                  "host": [
+                    "{{app_url}}"
+                  ],
+                  "path": [
+                    "space",
+                    "a"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Update a Space Name",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up old variables and set new ones\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"rndNum_upd\");\r",
+                  "pm.collectionVariables.unset(\"space_id\");\r",
+                  "\r",
+                  "\r",
+                  "// Create Space Name with Random Number for updating\r",
+                  "\r",
+                  "var rndNum_upd = Math.floor(Math.random() * 1000000);\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"space_name_upd\", \"space_\" + rndNum_upd);\r",
+                  "\r",
+                  "// Generate a random number for rndmNum variable\r",
+                  "\r",
+                  "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "\r",
+                  "// Create a Space for updating\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                  "    method: \"POST\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                  "        \"Content-Type\": \"application/json\",\r",
+                  "        \"accept\": \"application/json\"\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: \"raw\",\r",
+                  "        raw: JSON.stringify({\r",
+                  "            name: \"space_\" + rndNum\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    console.log(\"Status code of Space creation is \", response.code);\r",
+                  "\r",
+                  "    var body = response.json();\r",
+                  "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code for Update Space\r",
+                  "\r",
+                  "pm.test(\"Status code of Update Space is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Check ID of the space in the response body matches ID of the created space\r",
+                  "\r",
+                  "var body = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Space contains the same ID\", function () {\r",
+                  "    pm.expect(body.id).to.eql(pm.collectionVariables.get(\"space_id\"));\r",
+                  "});\r",
+                  "\r",
+                  "// Check Space Name is updated in the response body\r",
+                  "\r",
+                  "pm.test(\"Space contains the updated name\", function () {\r",
+                  "    pm.expect(body.name).to.eql(pm.collectionVariables.get(\"space_name_upd\"));\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Check schema of Space Update\r",
+                  "\r",
+                  "const Ajv = require('ajv');\r",
+                  "const ajv = new Ajv();\r",
+                  "\r",
+                  "var schema = {\r",
+                  "    \"type\": \"object\",\r",
+                  "    \"required\": [\"id\", \"name\", \"color\", \"private\", \"avatar\", \"admin_can_manage\", \"statuses\", \"multiple_assignees\", \"features\", \"archived\"],\r",
+                  "    \"properties\": {\r",
+                  "        \"id\": { \"type\": \"string\" },\r",
+                  "        \"name\": { \"type\": \"string\" },\r",
+                  "        \"color\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"private\": { \"type\": \"boolean\" },\r",
+                  "        \"avatar\": { \"type\": [\"string\", \"null\"] },\r",
+                  "        \"admin_can_manage\": { \"type\": [\"boolean\", \"null\"] },\r",
+                  "        \"multiple_assignees\": { \"type\": \"boolean\" },\r",
+                  "        \"archived\": { \"type\": \"boolean\" },\r",
+                  "        \"statuses\": {\r",
+                  "            \"type\": \"array\",\r",
+                  "            \"items\": {\r",
+                  "                \"type\": \"object\",\r",
+                  "                \"properties\": {\r",
+                  "                    \"id\": { \"type\": \"string\" },\r",
+                  "                    \"status\": { \"type\": \"string\" },\r",
+                  "                    \"type\": { \"type\": \"string\" },\r",
+                  "                    \"orderindex\": { \"type\": \"number\" },\r",
+                  "                    \"color\": { \"type\": \"string\" }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        },\r",
+                  "        \"features\": {\r",
+                  "            \"type\": \"object\",\r",
+                  "            \"properties\": {\r",
+                  "                \"due_dates\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"start_date\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_due_dates\": { \"type\": \"boolean\" },\r",
+                  "                        \"remap_closed_due_date\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"sprints\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"points\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"custom_items\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"checklists\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"milestones\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"dependency_warning\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"status_pies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"emails\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"time_tracking\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"default_to_billable\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"scheduler_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_type_enabled\": { \"type\": \"boolean\" },\r",
+                  "                \"dependency_enforcement\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"remap_dependency_settings\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" },\r",
+                  "                        \"enforcement_mode\": { \"type\": \"number\" },\r",
+                  "                        \"reschedule_closed_dependencies\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                },\r",
+                  "                \"reschedule_closed_dependencies\": {\r",
+                  "                    \"type\": \"object\",\r",
+                  "                    \"properties\": {\r",
+                  "                        \"enabled\": { \"type\": \"boolean\" }\r",
+                  "                    }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const validate = ajv.compile(schema);\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test('Update Schema is valid', function () {\r",
+                  "    const valid = validate(response);\r",
+                  "    pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Delete the created space\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\")\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.test(\"Status code of Space Delete is 200\", function () {\r",
+                  "        pm.expect(response).to.have.status(200);\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"{{space_name_upd}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{app_url}}/space/{{space_id}}",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "space",
+                "{{space_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a Space Color",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Clean up old variables and set new ones\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"rndNum\");\r",
+                  "pm.collectionVariables.unset(\"space_id\");\r",
+                  "pm.collectionVariables.unset(\"space_color_upd\");\r",
+                  "\r",
+                  "// Set the space_color_upd variable to a new value\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"space_color_upd\", \"#0000FF\");\r",
+                  "\r",
+                  "// Generate a random number for rndmNum variable\r",
+                  "\r",
+                  "var rndNum = Math.floor(Math.random() * 1000000);\r",
+                  "\r",
+                  "// Create a Space for updating\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/team/\" + pm.environment.get(\"team_id\") + \"/space\",\r",
+                  "    method: \"POST\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\"),\r",
+                  "        \"Content-Type\": \"application/json\",\r",
+                  "        \"accept\": \"application/json\"\r",
+                  "    },\r",
+                  "    body: {\r",
+                  "        mode: \"raw\",\r",
+                  "        raw: JSON.stringify({\r",
+                  "            name: \"space_\" + rndNum,\r",
+                  "            color: \"#FFFFFF\"\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "\r",
+                  "    console.log(\"Status code of Space creation is \", response.code);\r",
+                  "\r",
+                  "    var body = response.json();\r",
+                  "    pm.collectionVariables.set(\"space_id\", body.id);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check the status code for Update Space\r",
+                  "\r",
+                  "pm.test(\"Status code of Update Space is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "// Check ID of the space in the response body matches ID of the created space\r",
+                  "\r",
+                  "var body = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Space contains the same ID\", function () {\r",
+                  "    pm.expect(body.id).to.eql(pm.collectionVariables.get(\"space_id\"));\r",
+                  "});\r",
+                  "\r",
+                  "// Check Space Color is updated in the response body\r",
+                  "\r",
+                  "pm.test(\"Space contains the updated color\", function () {\r",
+                  "    pm.expect(body.color).to.eql(pm.collectionVariables.get(\"space_color_upd\"));\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Delete the created space\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.environment.get(\"app_url\") + \"/space/\" + pm.collectionVariables.get(\"space_id\"),\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: {\r",
+                  "        \"Authorization\": pm.environment.get(\"token\")\r",
+                  "    }\r",
+                  "}, function (err, response) {\r",
+                  "    if (err) {\r",
+                  "        console.error(err);\r",
+                  "        return;\r",
+                  "    }\r",
+                  "    pm.test(\"Status code of Space Delete is 200\", function () {\r",
+                  "        pm.expect(response).to.have.status(200);\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "value",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              },
+              {
+                "key": "accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"color\": \"{{space_color_upd}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{app_url}}/space/{{space_id}}",
+              "host": [
+                "{{app_url}}"
+              ],
+              "path": [
+                "space",
+                "{{space_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "space_name_non_uniq",
+      "value": ""
+    },
+    {
+      "key": "space_id",
+      "value": ""
+    },
+    {
+      "key": "space_id3",
+      "value": ""
+    },
+    {
+      "key": "space_id1",
+      "value": ""
+    },
+    {
+      "key": "space_id2",
+      "value": ""
+    },
+    {
+      "key": "team_id_tst",
+      "value": ""
+    },
+    {
+      "key": "space_name",
+      "value": ""
+    },
+    {
+      "key": "space_name_upd",
+      "value": ""
+    },
+    {
+      "key": "space_color_upd",
+      "value": ""
+    },
+    {
+      "key": "space_name1",
+      "value": ""
+    },
+    {
+      "key": "space_name2",
+      "value": ""
+    }
+  ]
+}
