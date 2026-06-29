@@ -1,0 +1,41 @@
+version: 2.1
+
+jobs:
+  run-postman-html-tests:
+    docker:
+      # Используем стабильную Node.js версию для установки Newman и плагинов
+      - image: cimg/node:20.11.0
+
+    steps:
+      - checkout
+
+      # Шаг 1: Установка Newman и плагина htmlextra глобально
+      - run:
+          name: Install Newman and HTMLextra reporter
+          command: |
+            sudo npm install -g newman newman-reporter-htmlextra
+
+      # Шаг 2: Создание папки для сохранения HTML-отчёта
+      - run:
+          name: Create directory for HTML report
+          command: mkdir -p test-results/html
+
+      # Шаг 3: Запуск тестов с флагами cli (для консоли) и htmlextra
+      - run:
+          name: Run Postman Collection and generate HTML report
+          command: |
+            newman run Collection_for_Coursework.postman_collection.json \
+            -e ClickUp_Environment.postman_environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export test-results/html/report.html \
+            --reporter-htmlextra-title "ClickUp API Test Report by CircleCI"
+
+      # Шаг 4: Сохранение HTML-отчёта в артефакты CircleCI
+      - store_artifacts:
+          path: test-results/html
+          destination: HTML-Dashboard
+
+workflows:
+  api-testing-workflow:
+    jobs:
+      - run-postman-html-tests
